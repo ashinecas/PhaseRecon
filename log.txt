@@ -1,0 +1,36 @@
+%%20140715
+	1. Read .tiff files and save them into a single file. (~\readImg.m)
+		Todo: GUI form.
+	2. Down Sampling projection data.(~\PhaseFDK\projDownSample.m)
+		Todo: FOV
+
+%%20140716
+	1. Read .tiff files, down sampling them, and output new .tiff files (OutImg.m)(mat2raw.m)
+
+%%20140718
+    1. Write client code to realize the whole process.
+
+%%20140724
+	1.research report on Iterative algorithms.(调研0724.pptx/~.docx)
+	2.Read fundamentals on FBP algorithms, both 2D and 3D(FDK).
+
+		(Ref:	
+			Rezvani, N. (2012). Iterative Reconstruction Algorithms for Polyenergetic X-Ray...
+		 	Computerized Tomography. Computer Science Dept., Univ. of Toronto. PhD: 127.)(Appendix A)
+		 	3D Filtered Backprojection.pdf
+	3. Read OSCaR function definition.
+	4.Matlab documnets center : Identify Program Dependencies
+	
+%%20140725
+	1. %Read Anonymous Functions
+		http://www.mathworks.cn/cn/help/matlab/matlab_prog/anonymous-functions.html
+	2. %Read nested function
+		http://www.mathworks.cn/cn/help/matlab/matlab_prog/nested-functions.html
+	3. %Read function handle
+		http://www.mathworks.cn/cn/help/matlab/matlab_prog/creating-a-function-handle.html
+%%20140729
+	1.read OSCaRPreprocess.m
+
+		findobj (handle)
+%%2014814 
+    version 0.1 finised
