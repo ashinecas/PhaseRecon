@@ -1,0 +1,3 @@
+
+Edit Matlab path
+	edit pathdef.m

@@ -1,4 +1,16 @@
 function varargout = projpreproc(varargin)
+
+%% TODO
+%%  Dark-flood correction
+%%  Logarithmic Projection normalization
+%%  Cosine Weighting
+%%  Parker Weighing
+%%  Ramp Filter
+
+%% Ref: 
+%%  1:Jeffrey, H. S., et al. (2013). Advances in 3D Image Reconstruction
+%%      Image Processing in Radiation Therapy, CRC Press: 171-192.
+
 % PROJPREPROC MATLAB code for projpreproc.fig
 %      PROJPREPROC, by itself, creates a new PROJPREPROC or raises the existing
 %      singleton*.

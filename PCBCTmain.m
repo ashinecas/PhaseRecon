@@ -1,4 +1,5 @@
 function varargout = PCBCTmain(varargin)
+%% PCBTmain  main function
 % PCBCTMAIN MATLAB code for PCBCTmain.fig
 %      PCBCTMAIN, by itself, creates a new PCBCTMAIN or raises the existing
 %      singleton*.
@@ -44,7 +45,7 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before PCBCTmain is made visible.
+%% --- Executes just before PCBCTmain is made visible.
 function PCBCTmain_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
