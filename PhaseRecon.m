@@ -1,4 +1,4 @@
-function recon = PhaseRecon(projfile,varain)
+function R = PhaseRecon(projfile,varain)
 %% Independent Reconstruction mode. Non-GUI mode.
 %Syntax
 % projfile is created by  projpreproc
@@ -9,7 +9,7 @@ function recon = PhaseRecon(projfile,varain)
 
 %% Input arguments initialization
 % if filterName not exist
-        filterName='R-L';
+        filterName='ram-lak';
   %else
   %    filterName= filterName;
 graphicalTag=1; 
@@ -41,7 +41,7 @@ proj_param.v_aper = round(proj_param.v_off_ML(proj_param.k_RL))+[-20:20];
 m = mean2(proj_data.log_P0(proj_param.v_aper,proj_param.u_aper));
 s = std2(proj_data.log_P0(proj_param.v_aper,proj_param.u_aper));
 
-if verboseTag==1
+if verboseTag==1 %Display reconstruction process
     subplot(1,2,1)
     imagesc(proj_data.log_P0,m+s*[-3,3])%Show 0 degree projection
     axis xy
@@ -154,3 +154,113 @@ proj_param.z = proj_param.dz*( [z0:z1]'-round(proj_param.v_off_ML(proj_param.k_R
 proj_param.x_size = length(proj_param.x);
 proj_param.y_size = length(proj_param.y);
 proj_param.z_size = length(proj_param.z);
+
+%% Set Filter
+du=proj_param.du;
+nu=proj_param.N_col;
+nv=proj_param.N_row;
+
+proj_param.Phihat = OSCaRFilter( filterName, nu, du, d );
+disp(['Using filter ', filterName,' with d=',num2str(d)]);
+
+%% Create Projection Matrix
+A = projectionMatrix(proj_param.theta,proj_param.du,proj_param.dv,proj_param.u_off,proj_param.v_off,proj_param.SDD,proj_param.SAD);
+
+%% Allocate space for Reconstruction Matrix
+R = zeros(length(proj_param.y), length(proj_param.x), length(proj_param.z));
+
+%% Weighting for non-central slices.
+dtheta = [proj_param.theta(2)-proj_param.theta(1) ; ( proj_param.theta(3:end)-proj_param.theta(1:end-2) )/2 ; proj_param.theta(end)-proj_param.theta(end-1)]; 
+dtheta_bar = mean(dtheta);
+Wt = dtheta/dtheta_bar;
+Wt = Wt./mean(Wt);
+Wr = pi/proj_param.N_proj;
+
+%% Begin Reconstruction!
+nu=proj_param.N_col;
+nv=proj_param.N_row;
+
+for k=1:proj_param.N_proj
+        logP=proj_data.P(:,:,k);
+        dR = phaseFDK( proj_param.x, proj_param.y, proj_param.z, proj_param.u_off(k), proj_param.v_off(k), proj_param.du, proj_param.dv, ...
+            proj_param.theta(k), logP, A(:,:,k), ...
+            proj_param.SDD, proj_param.SAD, proj_param.Phihat );
+        R = R + Wr*dR;
+     %display Reconstruction processes
+        if verboseTag==1
+            if ~mod(k,5)
+
+
+                figure(2)
+                subplot(2,2,1) %axial image
+                imagesc(proj_param.x,proj_param.y,R(:,:,round(proj_param.z_size/2)))
+                xlabel('x [cm]','Color',[0 0 1])
+                ylabel('y [cm]','Color',[0 0 1])
+                title('Axial','FontSize',12,'Color',[0 0 1]);
+
+                axis xy;
+                axis equal;
+                axis tight;
+                colormap bone;
+                set(gca,'XColor',[0 0 1],'YColor',[0 0 1])
+                colorbar;
+
+
+                hold on;
+                subplot(2,2,3) % Cornal image
+                R_cor = reshape( R(round(proj_param.y_size/2),:,:), proj_param.x_size,proj_param.z_size )';
+                imagesc( proj_param.x, proj_param.z, 1500 * ( R_cor-min(R_cor(:)) ) / ...
+                    ( max(R_cor(:))-min(R_cor(:)) ) );
+                xlabel('x [cm]','Color',[0 0 1])
+                ylabel('z [cm]','Color',[0 0 1])
+                title('Coronal','FontSize',12,'Color',[0 0 1]);
+                hold on;
+                axis xy;
+                axis equal;
+                axis tight;
+                colormap bone;
+                set(gca,'XColor',[0 0 1],'YColor',[0 0 1])
+                colorbar;
+
+                hold on;
+                subplot(2,2,4) %Sagital Image
+                imagesc( proj_param.y, proj_param.z, reshape( ...
+                    R(:,round(proj_param.x_size/2),:),round(proj_param.y_size),round(proj_param.z_size))' );
+                xlabel('y [cm]','Color',[0 0 1])
+                ylabel('z [cm]','Color',[0 0 1])
+                title('Sagital','FontSize',12,'Color',[0 0 1]);
+                axis xy;
+                axis equal;
+                axis tight;
+                colormap bone;
+                set(gca,'XColor',[0 0 1],'YColor',[0 0 1])
+                colorbar;
+                hold on;
+
+                subplot(2,2,2) %Projection image
+                proj_param.u_aper = round(proj_param.u_off_ML(k))+[-20:20];
+                proj_param.v_aper = round(proj_param.v_off_ML(k))+[-20:20];
+                m = mean2(logP(proj_param.v_aper,proj_param.u_aper));
+                s = std2(logP(proj_param.v_aper,proj_param.u_aper));
+
+                imagesc(logP,m+s*[-3,3])
+                hold on
+                plot(proj_param.u_off_ML(k),proj_param.v_off_ML(k),'rx','MarkerSize',14,'LineWidth',1.5)
+                hold off
+                xlabel('u [pixels]','Color',[0 0 1])
+                ylabel('v [pixels]','Color',[0 0 1])
+                title(['Projection ',num2str(k),' of ',num2str(proj_param.N_proj),', \theta_G=',num2str(proj_param.theta(k),'%.1f'),'[deg]'],'Color',[0 0 1],'FontSize',10)
+
+                axis xy
+                axis equal;
+                axis tight;
+                colormap bone;
+                colormap(gray(236))
+                set(gca,'XColor',[0 0 1],'YColor',[0 0 1])
+                pause(0.2)
+            end
+
+        end
+    
+end
+
