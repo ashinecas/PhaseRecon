@@ -1,6 +1,6 @@
 function varargout = projpreproc(varargin)
 
-%% TODO
+%% TODO Add these function
 %%  Dark-flood correction
 %%  Logarithmic Projection normalization
 %%  Cosine Weighting

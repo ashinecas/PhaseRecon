@@ -25,16 +25,28 @@ if strcmp(filter,'No Filter')
    return
 end
 
-Nfilt = max( 64, 2^nextpow2( 2*N ) );  % Length of desired filter
-Omega = 1/dx;                          % Omega = 2 x Nyquist frequency
-domega = Omega/Nfilt;                  % Effective frequency resolution
-omega = domega*(0:Nfilt/2);            % Effective frequency domain
+Nfilt = max( 64, 2^nextpow2( 2*N ) );  % Length of desired filter = 512
+Omega = 1/dx;                          % Omega = 2 x Nyquist frequency = 6.4433
+domega = Omega/Nfilt;                  % Effective frequency resolution = 0.0126
+omega = domega*(0:Nfilt/2);            % Effective frequency domain  max=1/(2*dx)=1/2*Omega
 filt = omega;                          % Initialise ramp filter
+
+%%debug commet:
+%% default value
+%%  d           1
+%%  domega      0.0126
+%%  dx          0.1552
+%%  filter      'Phase-contrast'
+%%  N           256
+%%  Nfilt       512
+%%  omega       1*257
+%%  Omega       6.4433
 
 % Generate windowed filter according to choice
 switch filter
     case 'ram-lak'
          % Do nothing
+         % all the filters below are based on ram-lak filter
     case 'shepp-logan'
           filt(2:end) = filt(2:end).*(sin(pi*omega(2:end)/(d*Omega))...
                         ./ (pi*omega(2:end)/(d*Omega)));
@@ -46,6 +58,8 @@ switch filter
     case 'hann'
           filt(2:end) = 0.5* filt(2:end) ...
                         .* (1 + cos(2*pi*omega(2:end)/(d*Omega)));
+    case 'Phase-contrast'
+          filt(2:end) = -0.5/pi;
     case 'New Filter'
         prompt={'Enter the apodizing window as a function of variable x that will be multiplied by the ramp filter (x is a vector):'};
         name='Input for the apodizing window';
@@ -80,8 +94,17 @@ switch filter
           msg = 'Invalid filter selected.';
           error(eid,'%s',msg);
 end
-filt(omega>0.5*Omega*d) = 0;       % Crop frequencies at d*Nyquist freq
-filt = [ filt, filt(end-1:-1:1) ]; % Frequencies ordered [0:N/2,-1:-N/2+1]
+
+switch filter
+    case 'Phase-contrast'
+        filt(omega>0.5*Omega*d) = 0;       % Crop frequencies at d*Nyquist freq
+        filt = [ filt, -filt(end-1:-1:1) ]; % Frequencies ordered [0:N/2,-1:-N/2+1]
+    otherwise
+        filt(omega>0.5*Omega*d) = 0;       % Crop frequencies at d*Nyquist freq
+        filt = [ filt, filt(end-1:-1:1) ]; % Frequencies ordered [0:N/2,-1:-N/2+1]
+end  
+        
+
 return
 
 function apodV=OSCaRApod(str,x)

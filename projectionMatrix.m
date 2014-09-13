@@ -23,7 +23,7 @@ for i = 1:N
     
     %extrinsic camerac calibration matrix   X_c = M*X   P^3 -> P^3
     
-    %R=rotationMatrix(thetaP(i),0,0); %% TODO  ?
+    % R=rotationMatrix(thetaP(i),0,0); %% TODO  ?
     R=rotationMatrix(90,0,thetaP(i)+90);  %Rotation matrix 
     t=[SAD*cosd(thetaP(i)); SAD*sind(thetaP(i)); 0];  % Translation matrix
     

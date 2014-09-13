@@ -1,26 +1,18 @@
-function dR = phaseFDK(x,y,z,u_off,v_off,du,dv,Beta,P,A,SDD,SAD,varargin)
-%% dR = OSCaRFDK(x,y,z,u_off,v_off,du,dv,Beta,P,A,Xs,SDD,PhiHat);
+function dR = phaseFDK(x,y,z,u_off,v_off,du,dv,Beta,P,A,SDD,SAD,filter)
+%% dR = phaseFDK(x,y,z,u_off,v_off,du,dv,Beta,P,A,SDD,SAD,PhiHat);
 %%*************************************************************************
-%% Module name:      OSCaRFDK.m
-%% Nargol Rezvani
-%% May 2007
-%% Revised July 2007, D. Aruliah
+
 %%  Inputs:
 %%      Beta:       the projection angle which is 
 %%                  fixed for the whole function.
-%%      P:          2-D Matrix of size nu*nv
-%%      u_off, v_off: give us the farthest point from
-%%                  the origin of the detector 
-%%                  in horizontal and vertical
-%%                  axes respectively.
-%%                  {In other words, our detector is of size
-%%                  [2*u_off]*[2*v_off]}(?)
-%%      du, dv:     step size
+%%      P:          single projection (nu,nv).
+%%      u_off, v_off: Offset position in each Projection. 
+%                       If there is no offset:  (u_off,v_off)  -> (0.5*len(u),0.5*len(v))
+%%      du, dv:     pixel sizes  (unit: mm)
 %%      x,y,z:      The 3-D grid for reconstructing the image. 
 %%      A:          Projection Matrix
 %%      SDD:        distance from source to detector
-%%      radius:     radius of the field-of-view
-%%      Xs:         ???
+%%      
 %%      Phihat:       1-D Ramp Filter, Different options of filters 
 %%                       -Will be added later.
 %%                       -will be available (in Fourier space)
@@ -35,45 +27,51 @@ function dR = phaseFDK(x,y,z,u_off,v_off,du,dv,Beta,P,A,SDD,SAD,varargin)
 %%  Description:
 %%      Reconstruct single Cone-Beam projection using 3D Feldkamp
 
-% Dimensions of reconstruction grid
-nx = length(x);
+%%  Dimensions of reconstructed Volume
+nx = length(x);  
 ny = length(y);
 nz = length(z);
+%% Non-central slice calibration 
+% TODO: We can do this calibration in preceding steps.
+%       since the weight function in our system is the same for every projection
 
 % Remark: There may be some savings in fft computation if P is transposed
-[nv,nu] = size(P);
-u = (-u_off + [0:nu-1]')*du;
-v = (-v_off + [0:nv-1]')*dv;
+[nv,nu] = size(P); 
+u = (-u_off + [0:nu-1]')*du;% u coordinate of pixels  (unit: mm)  vector
+v = (-v_off + [0:nv-1]')*dv;% v coordinate of pixels  (unit: mm)  vector
 % Remark: if P is transposed, 'meshgrid' should be changed to 'ndgrid'
-[uu,vv] = meshgrid(u,v);
-weight = SDD./sqrt(SDD^2 + vv.^2 + uu.^2);
+[uu,vv] = meshgrid(u,v);%TODO meshgrid()
 
-% Remark: P is over-written to conserve memory in following computations.
-%         The interpretation at each stage should be clear from context
-P = P .* weight;
+weight = SDD./sqrt(SDD^2 + vv.^2 + uu.^2);%TODO Very important.
+                                            % non-central slice modify
 
-% Filtering:
-Phihat = varargin{1};
-if ~isempty(Phihat), % Skip to backprojection is filter is empty
+
+P = P .* weight;  % weighted projection
+
+%%  Add Filter:  TODO: we can move the part in preceding steps.
+%Phihat = varargin{1};
+%if ~isempty(Phihat), % Filtered
+if ~isempty(filter)
     % Remark: This call to fft can likely be optimised using the transpose
     %         of P instead to capitalise on Matlab's column-oriented storage.
-    P = fft( P, length(Phihat), 2 ); % Rows zero-padded automatically
+    P = fft( P, length(filter), 2 ); % Rows zero-padded automatically
     % Remark: This loop can likely be vectorised using repmat
     for j=1:nv
-        P(j,:) = P(j,:) .* Phihat ;
+        P(j,:) = P(j,:) .* filter ;
     end;
     % Remark: This call to fft can likely be optimised using the transpose
     %         of P instead to capitalise on Matlab's column-oriented storage.
     P = real( ifft( P, [], 2 ) );
     P = P(:,1:nu); % Trim zero-padding on rows
 end % of if-block
+%% allocate space for reconstruction volume
 
 % Increment to add to reconstruction in backprojection stage
 dR = zeros(ny,nx,nz);
 
 % Vectorised computation of backprojection
 
-[yy, xx, zz] = ndgrid( y, x, z);
+[yy, xx, zz] = ndgrid( y, x, z); %TODO ndgrid()
 % Use projection matrix to project reconstruction (x,y,z) grid
 % into detector (u,v) grid
 UV = A * [ xx(:)'; yy(:)'; zz(:)'; ones(1,nx*ny*nz) ];

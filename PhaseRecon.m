@@ -160,7 +160,7 @@ du=proj_param.du;
 nu=proj_param.N_col;
 nv=proj_param.N_row;
 
-proj_param.Phihat = OSCaRFilter( filterName, nu, du, d );
+proj_param.Phihat = Filter( filterName, nu, du, d );
 disp(['Using filter ', filterName,' with d=',num2str(d)]);
 
 %% Create Projection Matrix
@@ -181,7 +181,7 @@ nu=proj_param.N_col;
 nv=proj_param.N_row;
 
 for k=1:proj_param.N_proj
-        logP=proj_data.P(:,:,k);
+        logP=proj_data.P(:,:,k);%load projection
         dR = phaseFDK( proj_param.x, proj_param.y, proj_param.z, proj_param.u_off(k), proj_param.v_off(k), proj_param.du, proj_param.dv, ...
             proj_param.theta(k), logP, A(:,:,k), ...
             proj_param.SDD, proj_param.SAD, proj_param.Phihat );
