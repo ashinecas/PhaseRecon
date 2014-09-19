@@ -9,7 +9,8 @@ function R = PhaseRecon(projfile,varain)
 
 %% Input arguments initialization
 % if filterName not exist
-        filterName='ram-lak';
+        %filterName='ram-lak';
+        filterName='Phase-contrast';
   %else
   %    filterName= filterName;
 graphicalTag=1; 
@@ -24,7 +25,7 @@ proj_data = experiment.data;
 
 ind_theta = find(abs(diff(proj_param.theta))>0.1);
 [t,ind2] = unique(proj_param.theta(ind_theta));
-proj_param.k_RL = max(1,min(round(interp1(t,ind_theta(ind2),0,'nearest','extrap')),proj_param.N_proj))
+proj_param.k_RL = max(1,min(round(interp1(t,ind_theta(ind2),0,'nearest','extrap')),proj_param.N_proj));
                     %0度投影编号
 proj_param.k_AP = max(1,min(round(interp1(t,ind_theta(ind2),90,'nearest','extrap')),proj_param.N_proj));
                     %90度投影编号
