@@ -28,7 +28,7 @@ end
 %%
 for i = 1:numfiles
     projSingle = readDat(ImgFiles(i).name);
-    projSingle = projSingle(1000:1010,:);
+    projSingle = projSingle(800:1000,:);
     filename = fullfile(newpath,strcat(num2str(i),'.tif'));
     % filename = strcat(num2str(i),'.tif');
     imwrite(projSingle,filename);

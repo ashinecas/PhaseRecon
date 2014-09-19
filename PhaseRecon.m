@@ -26,16 +26,16 @@ proj_data = experiment.data;
 ind_theta = find(abs(diff(proj_param.theta))>0.1);
 [t,ind2] = unique(proj_param.theta(ind_theta));
 proj_param.k_RL = max(1,min(round(interp1(t,ind_theta(ind2),0,'nearest','extrap')),proj_param.N_proj));
-                    %0度投影编号
+                    %0 degree projection No.
 proj_param.k_AP = max(1,min(round(interp1(t,ind_theta(ind2),90,'nearest','extrap')),proj_param.N_proj));
-                    %90度投影编号
+                    %90degree projection No.
 
-proj_data.log_P0=proj_data.P(:,:,proj_param.k_RL);%0度投影
-proj_data.log_P1=proj_data.P(:,:,proj_param.k_AP);%90度投影
+proj_data.log_P0=proj_data.P(:,:,proj_param.k_RL);%0 degree projection
+proj_data.log_P1=proj_data.P(:,:,proj_param.k_AP);%90 degree projection
 
 proj_param.u_off_ML = proj_param.u_off;%horizontal offset
 proj_param.v_off_ML = proj_param.v_off;%vertical offset
-proj_param.MF = 1 + (proj_param.IAD)./(proj_param.SAD);
+proj_param.MF = 1 + (proj_param.IAD)./(proj_param.SAD);%Magnitude ratio
 
 proj_param.u_aper = round(proj_param.u_off_ML(proj_param.k_RL))+[-20:20];
 proj_param.v_aper = round(proj_param.v_off_ML(proj_param.k_RL))+[-20:20];
